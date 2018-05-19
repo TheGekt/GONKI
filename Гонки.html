@@ -1,0 +1,262 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Race</title>
+    <style>
+        body{
+           font-size: 20px;    
+           font-family: 'PT Sans Caption', sans-serif;
+           background-image: url( 133.png);
+        }
+        
+        .header{
+            height: 100px;
+            width: 100%;
+            background-color: rgba(0, 98, 255, 0.76);
+            margin-left: 0%;
+            color: #eee;
+            text-align: center;
+            font-size: 30px;
+            
+        }
+        .header-title{
+            font-weight: normal;
+            line-height: 100px;
+        }
+        
+        .game{
+            height: 800px;
+            width: 1200px;
+            margin: 50px auto;
+            text-align: center;
+            
+        }
+        .game a{
+            
+            font-size: 50px;
+        }
+        
+        .main{
+            
+        }
+        
+        .footer{
+            
+        }
+        
+        .copyright{
+            text-align: center;
+        }
+        
+        .search{
+            text-align: right;
+            margin-right: 10px;
+            
+        }
+        
+        body {
+            margin: 0;
+        }
+        
+        .start-button {
+            cursor: pointer;
+            font-size: 25px;
+            margin: 380px auto;
+            
+        }
+        .pole{
+            background-color: green;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .pole::before {
+            content: '';
+            position: absolute;
+            left: 15%;
+            right: 15%;
+            top: 0;
+            bottom: 0;
+            background: rgb(149, 92, 16);
+        }
+        .game {
+            position: relative;
+        }
+        
+        .line {
+            height: 150%;
+            margin: 0 auto;
+            width: 20px;
+            background: white;
+            z-index: 1;
+            position: relative;
+        }
+        
+        .line::before, .line::after {
+            content: '';
+            width: 20px;
+            margin: 0 auto;
+            display: block;
+            background: rgb(149, 92, 16);
+            height: 200px;
+            margin-bottom: 200px;
+        }
+        
+        .auto {
+            display: block;
+            background: url(auto.png);
+            width: 119px;
+            height: 240px;
+            position: absolute;
+            left: 45%;
+            bottom: 0;
+            z-index: 2;
+        }
+        
+        .speed {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            z-index: 3;
+        }
+        
+        .blocks {
+            position: absolute;
+            left: 0;
+            top: -100%;
+            right: 0;
+            height: 200%;
+            z-index: 4;
+        }
+        
+        .block {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: red;
+        }
+        
+    </style>
+    <script
+  src="https://code.jquery.com/jquery-2.2.4.js"
+  integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="header">
+
+       <h1 class="header-title">Онлайн гонки</h1>
+    </div>
+    <div class="main">
+       <div class="game" id="game">
+           <div class="pole">
+               <div class="line"></div>
+               <div class="auto" id="auto1"></div>
+               <div class="speed"><span>0</span> км/ч</div>
+               <div class="blocks" id="blocks"></div><!-- препятствия -->
+           </div>
+           <button class="start-button">Играть!</button>
+           
+        </div>
+    </div>
+    
+    <div class="footer">
+       <div class="copyright">&copy;Гущин Даниил 2018</div>
+    </div>
+    
+<script>
+    $(document).ready(function() {
+        var state = 0; // состояние игры, 0 - ждем начала, 1 - игра, 2 - конец
+        var position = 50; // позиция машинки, 0 - 100 (проценты)
+        var last_position = 0; // предыдущее положение машинк
+        var pole_width = $('.pole').width(); // ширина поля в пикселях
+        var left_offset = 0.15 * pole_width; // левая граница поля
+        var rigth_offset = 0.15 * pole_width; // правая граница поля
+        var auto = $('#auto1'); // машинка
+        var auto_width = $(auto).width(); // ширина машинки
+        
+        var speed = 0; // скорость
+        var last_speed = 0;
+        
+        var blocks_count = 0;
+        var blocks_limit = 5;
+        
+        // обработчики кнопок
+        $('.start-button').on('click', function(e) {
+            $(this).hide();
+            state = 1;
+            e.preventDefault();
+            return false;
+        });
+        
+        $(document).on('keydown', function(e) {
+            var key = e.which;
+            if (key == 37) {
+                // влево
+                if (position > 0) {
+                    position--;
+                }
+            }
+            if (key == 39) {
+                // вправо
+                if (position < 100) {
+                    position++;
+                }
+            }
+            if (key == 38) {
+                // вперед
+                if (speed < 255) {
+                    speed++;
+                }
+            }
+            if (key == 40) {
+                // назад
+                if (speed > 0) {
+                    speed--;
+                }
+            }
+        });
+        
+        // основной цикл игры
+        setInterval(function() {
+
+            if (state == 0) {
+                
+            }
+            else if (state == 1) {
+                if (last_position != position) {
+                    // сдвигаем машинку в новое положение
+                    var x = left_offset + (pole_width - auto_width - left_offset - rigth_offset) * position / 100;
+                    $(auto).css({left: x});
+                    last_position = position;
+                }
+                
+                if (last_speed != speed) {
+                    $('.speed span').text(speed);
+                    last_speed = speed;
+                }
+                
+                if (blocks_count < blocks_limit) {
+                    $('#blocks').append('<div class="block" style="left: ' + (left_offset + ((pole_width - left_offset - rigth_offset) * Math.random())) + 'px; top: ' + (pole_width * Math.random()) + 'px;"></div>'); // 
+                    blocks_count++;
+                }
+                
+                // #blocks сдвигается со скоростью
+                
+                $('#blocks').css('top',parseInt($('#blocks').css('top')) + speed);
+            }
+            else if (state == 2) {
+                
+            }
+        }, 50);
+    });
+</script>
+</body>
+
+</html>
